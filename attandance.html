@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Attendance System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+   :root {
+  --primary: #22c55e;
+  --primary-dark: #16a34a;
+  --secondary: #4f46e5;
+  --text: #1f2937;
+  --text-light: #6b7280;
+  --bg: #f0fdf4;
+  --card-bg: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  color: var(--text);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: linear-gradient(to right, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+#reg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1.5rem;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.5rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #E02C2D;
+  text-decoration: none;
+  width: 30%;
+  margin: 0px 400px;
+}
+
+#reg:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-form {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  transition: all 0.3s ease;
+}
+
+.action-form:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0;
+}
+
+.form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9375rem;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1.5rem;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn i {
+  margin-right: 0.5rem;
+}
+
+.btn-present {
+  background: linear-gradient(to right, var(--primary), var(--primary-dark));
+}
+
+.btn-present:hover {
+  background: linear-gradient(to right, var(--primary-dark), #15803d);
+}
+
+.btn-absent {
+  background: linear-gradient(to right, #f59e0b, #d97706);
+}
+
+.btn-absent:hover {
+  background: linear-gradient(to right, #d97706, #b45309);
+}
+
+.btn-delete {
+  background: linear-gradient(to right, #ef4444, #dc2626);
+}
+
+.btn-delete:hover {
+  background: linear-gradient(to right, #dc2626, #b91c1c);
+}
+
+.student-list-container {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.student-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.student-list-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.refresh-btn {
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+  background: var(--primary-dark);
+}
+
+.student-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.student-table th,
+.student-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.student-table th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.student-table tr:hover {
+  background-color: #f8fafc;
+}
+
+.status-present {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.status-absent {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.status-pending {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-absent-sm {
+  background: #ef4444;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 0.375rem;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.btn-absent-sm:hover {
+  background: #dc2626;
+}
+
+.scanner-container {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  text-align: center;
+}
+
+#qr-reader {
+  width: 100%;
+  margin: 0 auto;
+}
+
+#qr-reader-results {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  display: none;
+}
+
+.scanner-toggle {
+  background: var(--secondary);
+  margin-top: 1rem;
+}
+
+.scanner-toggle:hover {
+  background: #3730a3;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+}
+
+.login-form {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-form h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+}
+
+.login-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.login-btn {
+  width: 100%;
+  background: var(--primary);
+  padding: 0.875rem;
+  font-size: 1rem;
+}
+
+.login-btn:hover {
+  background: var(--primary-dark);
+}
+
+.error-message {
+  color: #ef4444;
+  text-align: center;
+  margin-top: 1rem;
+  display: none;
+}
+
+/* Attendance Register Styles */
+.attendance-register-container {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  overflow-x: auto;
+}
+
+.register-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.register-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.month-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.month-selector select {
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #ddd;
+}
+
+.attendance-register {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.attendance-register th,
+.attendance-register td {
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.attendance-register th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.student-name-cell {
+  text-align: left;
+  min-width: 150px;
+  position: sticky;
+  left: 0;
+  background-color: white;
+  z-index: 2;
+}
+
+.day-header {
+  min-width: 40px;
+}
+
+.day-name {
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.day-date {
+  font-size: 0.875rem;
+  color: var(--text-light);
+}
+
+.attendance-cell {
+  font-weight: 600;
+}
+
+.present-cell {
+  color: var(--primary);
+  background-color: rgba(34, 197, 94, 0.1);
+}
+
+.absent-cell {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.empty-cell {
+  color: var(--text-light);
+  background-color: #f8fafc;
+}
+
+.register-summary {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+}
+
+.summary-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+@media (max-width: 1200px) {
+  #reg {
+    width: 40%;
+    margin: 0px 300px;
+  }
+}
+
+@media (max-width: 992px) {
+  #reg {
+    width: 50%;
+    margin: 0px 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .student-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  #reg {
+    width: 100%;
+    margin: 0 0 1rem 0;
+    display: block;
+    text-align: center;
+  }
+
+  .student-list-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .action-form {
+    padding: 1rem;
+  }
+
+  .student-list-container {
+    padding: 1rem;
+  }
+
+  .student-table th,
+  .student-table td {
+    padding: 0.5rem;
+  }
+
+  .btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .attendance-register-container {
+    padding: 1rem;
+  }
+
+  .summary-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  body {
+    padding: 1rem 0.5rem;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .login-form {
+    padding: 1.5rem;
+  }
+
+  .form-control {
+    padding: 0.6rem 0.8rem;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div id="loginPage" class="login-container">
+    <div class="login-form">
+      <h2>Admin Login</h2>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" class="form-control" placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" class="form-control" placeholder="Enter your password">
+      </div>
+      <button id="loginBtn" class="btn login-btn">Login</button>
+      <div id="loginError" class="error-message">Invalid email or password</div>
+    </div>
+  </div>
+  
+  <div id="attendancePage" class="container" style="display: none;">
+    <h1>Student Attendance System</h1>
+    <a href="index.html" id="reg">Register</a>
+    
+    <!-- QR Scanner Section -->
+    <div class="scanner-container">
+      <h3>QR Code Scanner</h3>
+      <div id="qr-reader"></div>
+      <div id="qr-reader-results"></div>
+      <button id="toggleScanner" class="btn scanner-toggle">
+        <i class="fas fa-camera"></i> Toggle Scanner
+      </button>
+    </div>
+    
+    <div class="action-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="rollNumber">Enter Roll Number</label>
+          <input type="text" id="rollNumber" class="form-control" placeholder="Enter roll number or scan QR code">
+        </div>
+        <div class="form-group">
+          <label for="action">&nbsp;</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="markPresent" class="btn btn-present" style="flex: 1;">
+              <i class="fas fa-check-circle"></i> Present
+            </button>
+            <button id="deleteStudent" class="btn btn-delete" style="flex: 1;">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="student-list-container">
+      <div class="student-list-header">
+        <h2 class="student-list-title">Student List</h2>
+        <span id="currentDate" style="font-weight:600; color:#4f46e5;"></span>
+        <button id="refreshList" class="refresh-btn">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+      
+      <table class="student-table">
+        <thead>
+          <tr>
+            <th>Index</th>
+            <th>Student Name</th>
+            <th>Roll No</th>
+            <th>Today's Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="studentList">
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 2rem;">
+              Loading students...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Attendance Register Section -->
+    <div class="attendance-register-container">
+      <div class="register-header">
+        <h2 class="register-title">Monthly Attendance Register</h2>
+        <div class="month-selector">
+          <select id="monthSelect">
+            <option value="0">January</option>
+            <option value="1">February</option>
+            <option value="2">March</option>
+            <option value="3">April</option>
+            <option value="4">May</option>
+            <option value="5">June</option>
+            <option value="6">July</option>
+            <option value="7">August</option>
+            <option value="8">September</option>
+            <option value="9">October</option>
+            <option value="10">November</option>
+            <option value="11">December</option>
+          </select>
+          <select id="yearSelect"></select>
+        </div>
+      </div>
+      
+      <div id="attendanceRegister">
+        <table class="attendance-register">
+          <thead>
+            <tr>
+              <th class="student-name-cell">Student Name</th>
+            </tr>
+          </thead>
+          <tbody id="registerBody"></tbody>
+        </table>
+      </div>
+      
+      <div class="register-summary">
+        <h3>Monthly Summary</h3>
+        <div class="summary-stats">
+          <div class="stat-item">
+            <span class="stat-value" id="totalStudents">0</span>
+            <span class="stat-label">Total Students</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="presentDays">0</span>
+            <span class="stat-label">Present Days</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="absentDays">0</span>
+            <span class="stat-label">Absent Days</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="scanMessage" style="display:none; color:green; font-weight:bold; margin-top:10px;"></div>
+  </div>
+
+   <script>
+    const SUPABASE_URL = "https://acxeommjbvohryqaadrp.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhbmFzZSIsInJlZiI6ImFjeGVvbW1qYnZvaHJ5cWFhZHJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyODU2NDMsImV4cCI6MjA3MDg2MTY0M30.YBXDNyzwO2uMQJi2ow1ZSrn_YP_ZagRjEdRmZYcrxD8";
+
+    // Create supabase client robustly (works whether createClient is global or on window.supabase)
+    let client = null;
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      } else if (typeof createClient === 'function') {
+        client = createClient(SUPABASE_URL, SUPABASE_KEY);
+      } else if (window.Supabase && typeof window.Supabase.createClient === 'function') {
+        client = window.Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      } else {
+        console.warn("Supabase createClient not found on window. The CDN script might not expose globals in this environment.");
+      }
+    } catch (e) {
+      console.error("Error creating Supabase client:", e);
+    }
+
+    const loginPage = document.getElementById('loginPage');
+    const attendancePage = document.getElementById('attendancePage');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginError = document.getElementById('loginError');
+    const rollNumberInput = document.getElementById('rollNumber');
+    const markPresentBtn = document.getElementById('markPresent');
+    const deleteStudentBtn = document.getElementById('deleteStudent');
+    const refreshListBtn = document.getElementById('refreshList');
+    const studentList = document.getElementById('studentList');
+    const qrReader = document.getElementById('qr-reader');
+    const qrResult = document.getElementById('qr-reader-results');
+    const toggleScannerBtn = document.getElementById('toggleScanner');
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    const registerBody = document.getElementById('registerBody');
+
+    let students = [];
+    let attendanceRecords = [];
+    let html5Qrcode = null;
+    let isScannerActive = false;
+
+    loginBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      
+      if (email === 'admin@gmail.com' && password === '123456') {
+        loginPage.style.display = 'none';
+        attendancePage.style.display = 'block';
+        // load data in order and render register after both loaded
+        await fetchStudents();
+        await fetchAttendanceRecords();
+        showCurrentDate();
+        setupAttendanceRegister();
+        renderAttendanceRegister();
+      } else {
+        loginError.style.display = 'block';
+      }
+    });
+
+    passwordInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') loginBtn.click();
+    });
+
+    function formatDate(dateObj) {
+      return dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+    }
+
+    function onScanSuccess(decodedText) {
+      const scannedRollNumber = decodedText.trim();
+      rollNumberInput.value = scannedRollNumber;
+      qrResult.style.display = 'block';
+      qrResult.innerHTML = `Scanned: ${scannedRollNumber}`;
+      markDailyAttendance(scannedRollNumber, 'Present');
+    }
+
+    // QR toggle (keeps same behaviour as before)
+    toggleScannerBtn.addEventListener('click', async () => {
+      if (!isScannerActive) {
+        if (!html5Qrcode) html5Qrcode = new Html5Qrcode("qr-reader");
+        try {
+          await html5Qrcode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            onScanSuccess,
+            (err) => console.warn("QR scan failure:", err)
+          );
+          isScannerActive = true;
+          toggleScannerBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Scanner';
+        } catch (err) {
+          console.error("Error starting scanner:", err);
+          Swal.fire({icon:'error', title:'Scanner error', text:String(err)});
+        }
+      } else {
+        try {
+          await html5Qrcode.stop();
+          isScannerActive = false;
+          toggleScannerBtn.innerHTML = '<i class="fas fa-camera"></i> Toggle Scanner';
+        } catch (err) {
+          console.error("Error stopping scanner:", err);
+        }
+      }
+    });
+
+    async function fetchStudents() {
+      if (!client) {
+        console.error("Supabase client not initialized. Cannot fetch students.");
+        studentList.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #ef4444;">Supabase client not initialized. Check console.</td></tr>`;
+        return;
+      }
+      try {
+        // use explicit order options for compatibility
+        const { data, error } = await client.from('students').select('*').order('roll_no', { ascending: true });
+        if (error) {
+          console.error("Error fetching students (response):", error);
+          studentList.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #ef4444;">Error loading students</td></tr>`;
+          return;
+        }
+        students = data || [];
+        renderStudentList();
+      } catch (e) {
+        console.error("Exception fetching students:", e);
+        studentList.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #ef4444;">Error loading students (check console)</td></tr>`;
+      }
+    }
+
+    async function fetchAttendanceRecords() {
+      if (!client) {
+        console.error("Supabase client not initialized. Cannot fetch attendance.");
+        return;
+      }
+      try {
+        const { data, error } = await client.from('attendance').select('*');
+        if (error) {
+          console.error("Error fetching attendance (response):", error);
+          return;
+        }
+        attendanceRecords = data || [];
+        // keep student list updated after attendance refresh
+        renderStudentList();
+      } catch (e) {
+        console.error("Exception fetching attendance:", e);
+      }
+    }
+
+    function renderStudentList() {
+      studentList.innerHTML = '';
+      if (!students || students.length === 0) {
+        studentList.innerHTML = `<tr><td colspan="5" style="text-align:center;">No students found</td></tr>`;
+        return;
+      }
+      
+      const today = formatDate(new Date());
+      
+      students.forEach((s, i) => {
+        const todayAttendance = attendanceRecords.find(record => 
+          String(record.roll_no) === String(s.roll_no) && record.date === today
+        );
+        
+        const status = todayAttendance ? todayAttendance.status : 'Pending';
+        let statusClass = status === 'Present' ? 'status-present' : status === 'Absent' ? 'status-absent' : 'status-pending';
+        
+        studentList.innerHTML += `
+          <tr>
+            <td>${i+1}</td>
+            <td>${s.name}</td>
+            <td>${s.roll_no}</td>
+            <td class="${statusClass}">${status}</td>
+            <td>
+              <button class="btn-absent-sm" onclick="markDailyAttendance('${s.roll_no}', 'Absent')">
+                <i class="fas fa-times-circle"></i> Absent
+              </button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    async function markDailyAttendance(rollNo, status) {
+      if (!rollNo) return alert("Enter roll no");
+      if (!client) return alert("Supabase client not initialized (cannot mark attendance).");
+
+      const today = formatDate(new Date());
+      
+      const existingAttendance = attendanceRecords.find(record => 
+        String(record.roll_no) === String(rollNo) && record.date === today
+      );
+      
+      if (existingAttendance) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Attendance Already Marked',
+          text: `Attendance for ${rollNo} is already marked as ${existingAttendance.status} for today`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+        return;
+      }
+      
+      const student = students.find(s => String(s.roll_no) === String(rollNo));
+      if (!student) {
+        alert("Student not found");
+        return;
+      }
+      
+      try {
+        const { data, error } = await client.from('attendance').insert([
+          { roll_no: rollNo, name: student.name, status: status, date: today }
+        ]);
+        if (error) {
+          console.error("Error inserting attendance:", error);
+          Swal.fire({ icon: 'error', title: 'Error', text: 'Could not record attendance (check console)' });
+          return;
+        }
+        Swal.fire({
+          icon: 'success',
+          title: 'Attendance Recorded',
+          text: `${student.name} (${rollNo}) marked as ${status}`,
+          timer: 1500,
+          showConfirmButton: false
+        });
+        // refresh local attendanceRecords and UI
+        await fetchAttendanceRecords();
+        renderStudentList();
+        renderAttendanceRegister();
+      } catch (e) {
+        console.error("Exception inserting attendance:", e);
+      }
+    }
+
+    async function deleteStudent(rollNo) {
+      if (!rollNo) return alert("Enter roll no");
+      if (!client) return alert("Supabase client not initialized (cannot delete).");
+      if (!confirm(`Delete student ${rollNo}? This will also delete all attendance records.`)) return;
+      
+      try {
+        const { error: attendanceError } = await client.from("attendance").delete().eq("roll_no", rollNo);
+        if (attendanceError) console.error("Error deleting attendance records:", attendanceError);
+
+        const { error: studentError } = await client.from("students").delete().eq("roll_no", rollNo);
+        if (studentError) {
+          console.error("Error deleting student:", studentError);
+          return;
+        }
+
+        students = students.filter(s => String(s.roll_no) !== String(rollNo));
+        attendanceRecords = attendanceRecords.filter(record => String(record.roll_no) !== String(rollNo));
+        renderStudentList();
+        renderAttendanceRegister();
+        rollNumberInput.value = '';
+      } catch (e) {
+        console.error("Exception deleting student:", e);
+      }
+    }
+
+    markPresentBtn.addEventListener('click', () => { markDailyAttendance(rollNumberInput.value.trim(), 'Present'); });
+    deleteStudentBtn.addEventListener('click', () => { deleteStudent(rollNumberInput.value.trim()); });
+    refreshListBtn.addEventListener('click', async () => { 
+      await fetchStudents(); 
+      await fetchAttendanceRecords(); 
+      renderStudentList();
+      renderAttendanceRegister();
+    });
+
+    function showCurrentDate() {
+      document.getElementById("currentDate").innerText = new Date().toDateString();
+    }
+
+    function setupAttendanceRegister() {
+      const currentYear = new Date().getFullYear();
+      for (let year = currentYear - 1; year <= currentYear + 1; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        option.selected = year === currentYear;
+        yearSelect.appendChild(option);
+      }
+      const currentMonth = new Date().getMonth();
+      monthSelect.value = currentMonth;
+      monthSelect.addEventListener('change', renderAttendanceRegister);
+      yearSelect.addEventListener('change', renderAttendanceRegister);
+    }
+
+    function renderAttendanceRegister() {
+      const year = parseInt(yearSelect.value || new Date().getFullYear());
+      const month = parseInt(monthSelect.value || new Date().getMonth());
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      
+      const thead = document.querySelector('.attendance-register thead tr');
+      thead.innerHTML = '<th class="student-name-cell">Student Name</th>';
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dayName = getShortDayName(date.getDay());
+        thead.innerHTML += `
+          <th class="day-header">
+            <div class="day-name">${dayName}</div>
+            <div class="day-date">${day}</div>
+          </th>`;
+      }
+      
+      registerBody.innerHTML = '';
+      if (!students || students.length === 0) {
+        registerBody.innerHTML = `<tr><td colspan="${daysInMonth + 1}" style="text-align:center;">No students found</td></tr>`;
+        updateRegisterSummary();
+        return;
+      }
+      
+      students.forEach(student => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td class="student-name-cell">${student.name} (${student.roll_no})</td>`;
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+          const currentDate = formatDate(new Date(year, month, day));
+          const attendanceRecord = attendanceRecords.find(record => 
+            String(record.roll_no) === String(student.roll_no) && record.date === currentDate
+          );
+          
+          if (attendanceRecord) {
+            const statusClass = attendanceRecord.status === 'Present' ? 'present-cell' : 'absent-cell';
+            row.innerHTML += `<td class="attendance-cell ${statusClass}">${attendanceRecord.status === 'Present' ? 'P' : 'A'}</td>`;
+          } else {
+            row.innerHTML += `<td class="attendance-cell empty-cell">-</td>`;
+          }
+        }
+        registerBody.appendChild(row);
+      });
+      updateRegisterSummary();
+    }
+
+    function getShortDayName(dayIndex) {
+      const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+      return days[dayIndex];
+    }
+
+    function updateRegisterSummary() {
+      const year = parseInt(yearSelect.value || new Date().getFullYear());
+      const month = parseInt(monthSelect.value || new Date().getMonth());
+      const monthRecords = attendanceRecords.filter(record => {
+        const recordDate = new Date(record.date);
+        return recordDate.getFullYear() === year && recordDate.getMonth() === month;
+      });
+      const presentCount = monthRecords.filter(record => record.status === 'Present').length;
+      const absentCount = monthRecords.filter(record => record.status === 'Absent').length;
+      document.getElementById('totalStudents').textContent = students.length || 0;
+      document.getElementById('presentDays').textContent = presentCount;
+      document.getElementById('absentDays').textContent = absentCount;
+    }
+
+    // init
+    document.addEventListener('DOMContentLoaded', () => {
+      loginPage.style.display = 'flex';
+      attendancePage.style.display = 'none';
+      emailInput.value = '';
+      passwordInput.value = '';
+      // quick sanity console info
+      if (!client) {
+        console.warn("Supabase client not initialized. If you included the CDN, it may not expose the client as a global. Check network and console.");
+      } else {
+        console.info("Supabase client initialized.");
+      }
+    });
+  </script>
+</body>
+</html>
